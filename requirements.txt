@@ -1,3 +1,2 @@
 python-telegram-bot
 paho-mqtt
-redis

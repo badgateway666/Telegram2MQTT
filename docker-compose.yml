@@ -2,19 +2,16 @@ version: '3'
 services:
   app:
     build: .
+    depends_on:
+      - mosquitto
+    links:
+      - mosquitto
     environment:
       DEBUG_MODE: "true"
       BOT_TOKEN: "${BOT_TOKEN}"
-      MY_TELEGRAM_ID: "${MY_TELEGRAM_ID}"
+      ALLOWED_TELEGRAM_IDS: "${ALLOWED_TELEGRAM_IDS}"
       MQTT_BROKER_HOST: "${MQTT_BROKER_HOST}"
-  redis:
-    image: redis:6-alpine
-    volumes:
-    - ./redis/data:/data
-    - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
   mosquitto:
     image: eclipse-mosquitto:1.6
     volumes:
     - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
-    - ./mosquitto/data:/mosquitto/data
-    - ./mosquitto/logs:/mosquitto/logs
