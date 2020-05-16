@@ -19,7 +19,7 @@ are provided by environment variables.
 
 A Dockerfile is provided for running and developing T2M with docker.
 Additionally a docker-compose.yml with [mosquitto](https://mosquitto.org/) is included,
-for having a full working environment upon starting with `docker-compose up
+for having a full working environment upon starting with `docker-compose up`
 
 For use with docker-compose,
 it is advised to store your bot token in an environment-variable-file called `.env`
