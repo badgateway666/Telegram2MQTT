@@ -50,6 +50,12 @@ class TelegramHandler(object):
             self.telegram_bot.send_message(uid, "Telegram2MQTT Bot is online.")
         self.updater.start_polling()
 
+    def stop(self):
+        for uid in self.allowed_telegram_user_ids:
+            self.telegram_bot.send_message(uid, "Telegram2MQTT Bot is offline.")
+        self.logger.info("Telegram-Handler stopped.")
+        self.updater.stop()
+
     def sub_handler(self, update, context):
         self.logger.debug(f"Sub Handler received args: '{context.args}'")
         # Validate context.args

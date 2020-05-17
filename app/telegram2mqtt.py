@@ -89,5 +89,5 @@ class Telegram2MQTT(object):
         # TODO: Persist state here
 
         self.mqtt_handler.disconnect()
-        self.telegram_handler.updater.stop()
+        self.telegram_handler.stop()
         self.telegram_thread.join()
