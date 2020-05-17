@@ -29,9 +29,11 @@ it is advised to store your bot token in an environment-variable-file called `.e
 placed in the project's root directory.
 
 ## Not-working stuff
-- Wildcard subs
 - Re-subscribe between restarts
 - Authenticated use of MQTT-broker
+
+## Almost-working stuff
+- Wildcard support
 
 ## Planned features
 - Authenticated MQTT
