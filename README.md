@@ -31,7 +31,7 @@ placed in the project's root directory.
 ## Not-working stuff
 - Wildcard subs
 - Re-subscribe between restarts
-- Authenticated use of MQTT-Broker
+- Authenticated use of MQTT-broker
 
 ## Planned features
 - Authenticated MQTT
@@ -42,5 +42,6 @@ placed in the project's root directory.
 - Different message modes, f.e. binary data like photos as in- and output
 - Better documentation
 - Hook-Points for customizing gateway behavior
-- Multi-User functionality
+- Multi-user functionality
+- More cute emojis
 - ...

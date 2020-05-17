@@ -1,4 +1,5 @@
 import logging
+import re
 from queue import SimpleQueue
 
 from telegram.bot import Bot as Telegram_Bot
@@ -57,6 +58,18 @@ class TelegramHandler(object):
         self.updater.stop()
 
     def sub_handler(self, update, context):
+        """
+        For subscriptions, two wildcard characters are supported:
+            - A '#' character represents a complete sub-tree of the hierarchy
+                and thus must be the last character in a subscription topic string, such as SENSOR/#.
+                This will match any topic starting with SENSOR/, such as SENSOR/1/TEMP and SENSOR/2/HUMIDITY.
+            - A '+' character represents a single level of the hierarchy and is used between delimiters.
+                For example, SENSOR/+/TEMP will match SENSOR/1/TEMP and SENSOR/2/TEMP.
+
+                + --> \w+
+                # --> (\w|\/)+
+
+        """
         self.logger.debug(f"Sub Handler received args: '{context.args}'")
         # Validate context.args
 
@@ -149,31 +162,34 @@ class TelegramHandler(object):
 
     def publish_to_telegram(self, topic, message):
         self.logger.debug(f"Message from MQTT. Topic: '{topic}' Message: '{message}'")
-        if topic not in self.topics_to_uid:
+
+        # TODO: Handle wildcards here
+        # 1. Search for known subs to topics which match the mqtt messages topic
+        make_regex_from_topic = lambda t: re.compile(
+            t.replace("/", "\/")
+            .replace(r"+", r"\w+")
+            .replace(r"#", r"(\w|\/)+")
+            .replace("$", "\$")
+        )
+        matched_topics = [
+            t for t in self.topics_to_uid if re.match(make_regex_from_topic(t), topic)
+        ]
+        logging.debug(f"Matched topics for topic '{topic}': {matched_topics}")
+
+        # 2. Collect all users which subbed to any of these topics, store as set to deduplicate
+        recipients = set()
+        for t in matched_topics:
+            for uid in self.topics_to_uid[t]:
+                recipients.add(uid)
+
+        if len(recipients) == 0:
             self.logger.error(
                 f"Couldn't publish message '{message}' to topic '{topic}', no matching user id found."
             )
             return
 
-        # TODO: Handle wildcards here
-        # 1. Search for known subs to topics which match the mqtt messages topic
-        # 2. Collect all users which subbed to any of these topics
-        # 3. Store as set to deduplicate, and forward message
-
+        # 3. Forward message
         self.logger.info("Forwarding mqtt-message to telegram.")
         telegram_msg = f"Received message on topic '{topic}':\n{message}"
-        for uid in self.topics_to_uid[topic]:
+        for uid in recipients:
             self.telegram_bot.send_message(uid, telegram_msg)
-
-    @staticmethod
-    def make_regex_from_topic(topic):
-        """
-        For subscriptions, two wildcard characters are supported:
-            - A '#' character represents a complete sub-tree of the hierarchy
-                and thus must be the last character in a subscription topic string, such as SENSOR/#.
-                This will match any topic starting with SENSOR/, such as SENSOR/1/TEMP and SENSOR/2/HUMIDITY.
-            - A '+' character represents a single level of the hierarchy and is used between delimiters.
-                For example, SENSOR/+/TEMP will match SENSOR/1/TEMP and SENSOR/2/TEMP.
-
-        """
-        pass
