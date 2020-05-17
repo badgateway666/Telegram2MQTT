@@ -16,8 +16,8 @@ class SignalHandler:
 
     def __init__(self):
         self.signal_received = False
-        signal.signal(signal.SIGINT, self.signal_received)
-        signal.signal(signal.SIGTERM, self.signal_received)
+        signal.signal(signal.SIGINT, self.receive_signal)
+        signal.signal(signal.SIGTERM, self.receive_signal)
 
     def receive_signal(self, signum, frame):
         logging.debug("Signal received")
