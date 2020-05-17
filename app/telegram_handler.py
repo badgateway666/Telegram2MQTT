@@ -55,13 +55,15 @@ class TelegramHandler(object):
         # Validate context.args
 
         topic = context.args[0]
+        # Think of a way to handle wildcards properly, so actual topics can later be matched to the wildcard
+
         if topic not in self.topics_to_uid:
             self.logger.info(f"Subscribe to topic '{topic}'")
-            self.topics_to_uid[topic] = []
+            self.topics_to_uid[topic] = set()
             self.sub_queue.put(topic)
 
         if update.effective_chat.id not in self.topics_to_uid[topic]:
-            self.topics_to_uid[topic].append(update.effective_chat.id)
+            self.topics_to_uid[topic].add(update.effective_chat.id)
             context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=f"Sub on topic '{topic}' received.",
@@ -116,6 +118,11 @@ class TelegramHandler(object):
                 f"Couldn't publish message '{message}' to topic '{topic}', no matching user id found."
             )
             return
+
+        # TODO: Handle wildcards here
+        # 1. Search for known subs to topics which match the mqtt messages topic
+        # 2. Collect all users which subbed to any of these topics
+        # 3. Store as set to deduplicate, and forward message
 
         self.logger.info("Forwarding mqtt-message to telegram.")
         telegram_msg = f"Received message on topic '{topic}':\n{message}"
