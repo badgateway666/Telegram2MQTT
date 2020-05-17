@@ -31,8 +31,10 @@ placed in the project's root directory.
 ## Not-working stuff
 - Wildcard subs
 - Re-subscribe between restarts
+- Authenticated use of MQTT-Broker
 
 ## Planned features
+- Authenticated MQTT
 - Persistence of subscriptions between restarts
 - Proper handling of wildcard topics
 - `/help` commands with usage information
