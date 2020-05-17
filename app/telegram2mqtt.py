@@ -7,12 +7,13 @@ from mqtt_handler import MQTTHandler
 from telegram_handler import TelegramHandler
 
 
-class SIGTERMHandler:
+class SignalHandler:
     """
-    SIGTERMHandler
+    SignalHandler
 
     Sets flag upon receiving SIGINT or SIGTERM (like from 'docker stop')
     """
+
     def __init__(self):
         self.signal_received = False
         signal.signal(signal.SIGINT, self.signal_received)
@@ -46,12 +47,12 @@ class Telegram2MQTT(object):
         """
         'Main'-Method
         """
-        self.mqtt_handler()                 # Start mqtt client
-        self.telegram_thread.start()        # Start telegram bot
+        self.mqtt_handler()  # Start mqtt client
+        self.telegram_thread.start()  # Start telegram bot
 
         # TODO: Recreate former state here
 
-        s = SIGTERMHandler()
+        s = SignalHandler()
         self.logger.info("Starting main loop.")
         while not s.signal_received:
             action_done = False

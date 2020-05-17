@@ -56,15 +56,19 @@ class TelegramHandler(object):
 
         topic = context.args[0]
         if topic.count("#") >= 2:
-            self.logger.warning(f"Invalid topic '{topic}' for subscription: Multiple '#' character used.")
+            self.logger.warning(
+                f"Invalid topic '{topic}' for subscription: Multiple '#' character used."
+            )
             context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=f"Invalid topic '{topic}' for subscription: Multiple '#' character used.",
             )
             return
 
-        if '#' in topic and not topic.endswith('#'):
-            self.logger.warning(f"Invalid topic '{topic}' for subscription: '#' not used as last character.")
+        if "#" in topic and not topic.endswith("#"):
+            self.logger.warning(
+                f"Invalid topic '{topic}' for subscription: '#' not used as last character."
+            )
             context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=f"Invalid topic '{topic}' for subscription: '#' not used as last character.",
@@ -119,7 +123,7 @@ class TelegramHandler(object):
         )
 
         # Validate topic
-        if '#' in topic or '+' in topic:
+        if "#" in topic or "+" in topic:
             self.logger.warning(
                 f"Pub Handler received topic with wildcard-character: '{topic}'."
             )
@@ -138,9 +142,7 @@ class TelegramHandler(object):
         )
 
     def publish_to_telegram(self, topic, message):
-        self.logger.debug(
-            f"Message from MQTT. Topic: '{topic}' Message: '{message}'"
-        )
+        self.logger.debug(f"Message from MQTT. Topic: '{topic}' Message: '{message}'")
         if topic not in self.topics_to_uid:
             self.logger.error(
                 f"Couldn't publish message '{message}' to topic '{topic}', no matching user id found."

@@ -33,7 +33,9 @@ class MQTTHandler(object):
         self.logger.debug(f"MQTT-Client disconnected. Result code {rc}")
 
     def on_message(self, client, userdata, msg):
-        self.logger.debug(f"MQTT-Client received mesage. Topic: '{msg.topic}'  Message: '{msg.payload}'")
+        self.logger.debug(
+            f"MQTT-Client received mesage. Topic: '{msg.topic}'  Message: '{msg.payload}'"
+        )
         self.pending_messages.put((msg.topic, msg.payload))
 
     def subscribe(self, topic):
