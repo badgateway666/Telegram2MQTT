@@ -14,13 +14,13 @@ class SIGTERMHandler:
     Sets flag upon receiving SIGINT or SIGTERM (like from 'docker stop')
     """
     def __init__(self):
-        self.sigterm_received = False
-        signal.signal(signal.SIGINT, self.receive_sigterm)
-        signal.signal(signal.SIGTERM, self.receive_sigterm)
+        self.signal_received = False
+        signal.signal(signal.SIGINT, self.signal_received)
+        signal.signal(signal.SIGTERM, self.signal_received)
 
-    def receive_sigterm(self, signum, frame):
+    def receive_signal(self, signum, frame):
         logging.debug("Signal received")
-        self.sigterm_received = True
+        self.signal_received = True
 
 
 class Telegram2MQTT(object):
@@ -32,6 +32,7 @@ class Telegram2MQTT(object):
 
     def __init__(self, bot_token, mqtt_broker_host, allowed_telegram_user_ids):
         self.logger = logging.getLogger("telegram2mqtt")
+
         # Initialize mqtt-client
         self.mqtt_handler = MQTTHandler(mqtt_broker_host)
 
@@ -39,15 +40,20 @@ class Telegram2MQTT(object):
         self.telegram_handler = TelegramHandler(bot_token, allowed_telegram_user_ids)
         self.telegram_thread = threading.Thread(target=self.telegram_handler)
 
+        # TODO: Load persisted state here
+
     def __call__(self):
         """
         'Main'-Method
         """
         self.mqtt_handler()                 # Start mqtt client
         self.telegram_thread.start()        # Start telegram bot
+
+        # TODO: Recreate former state here
+
         s = SIGTERMHandler()
         self.logger.info("Starting main loop.")
-        while not s.sigterm_received:
+        while not s.signal_received:
             action_done = False
 
             if not self.mqtt_handler.pending_messages.empty():
@@ -78,6 +84,9 @@ class Telegram2MQTT(object):
                 time.sleep(0.1)
 
         self.logger.info("Shutting down Telegram2MQTT")
+
+        # TODO: Persist state here
+
         self.mqtt_handler.disconnect()
         self.telegram_handler.updater.stop()
         self.telegram_thread.join()
