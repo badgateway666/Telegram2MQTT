@@ -55,7 +55,21 @@ class TelegramHandler(object):
         # Validate context.args
 
         topic = context.args[0]
-        # Think of a way to handle wildcards properly, so actual topics can later be matched to the wildcard
+        if topic.count("#") >= 2:
+            self.logger.warning(f"Invalid topic '{topic}' for subscription: Multiple '#' character used.")
+            context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=f"Invalid topic '{topic}' for subscription: Multiple '#' character used.",
+            )
+            return
+
+        if '#' in topic and not topic.endswith('#'):
+            self.logger.warning(f"Invalid topic '{topic}' for subscription: '#' not used as last character.")
+            context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=f"Invalid topic '{topic}' for subscription: '#' not used as last character.",
+            )
+            return
 
         if topic not in self.topics_to_uid:
             self.logger.info(f"Subscribe to topic '{topic}'")
@@ -103,6 +117,20 @@ class TelegramHandler(object):
         self.logger.info(
             f"Pub Handler received pub on topic '{topic}'. Message: '{message}'"
         )
+
+        # Validate topic
+        if '#' in topic or '+' in topic:
+            self.logger.warning(
+                f"Pub Handler received topic with wildcard-character: '{topic}'."
+            )
+            context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=f"Invalid input: wildcard-character in topic '{topic}' detected.",
+            )
+            return
+
+        # Validate msg, should empty messages be valid?
+
         self.pub_queue.put((topic, message))
         context.bot.send_message(
             chat_id=update.effective_chat.id,
@@ -128,3 +156,16 @@ class TelegramHandler(object):
         telegram_msg = f"Received message on topic '{topic}':\n{message}"
         for uid in self.topics_to_uid[topic]:
             self.telegram_bot.send_message(uid, telegram_msg)
+
+    @staticmethod
+    def make_regex_from_topic(topic):
+        """
+        For subscriptions, two wildcard characters are supported:
+            - A '#' character represents a complete sub-tree of the hierarchy
+                and thus must be the last character in a subscription topic string, such as SENSOR/#.
+                This will match any topic starting with SENSOR/, such as SENSOR/1/TEMP and SENSOR/2/HUMIDITY.
+            - A '+' character represents a single level of the hierarchy and is used between delimiters.
+                For example, SENSOR/+/TEMP will match SENSOR/1/TEMP and SENSOR/2/TEMP.
+
+        """
+        pass
